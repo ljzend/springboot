@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ljz.huotai.mapper.MenuMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ljz.huotai.pojo.Menu">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="path" property="path"/>
+        <result column="perms" property="perms"/>
+        <result column="component" property="component"/>
+        <result column="type" property="type"/>
+        <result column="icon" property="icon"/>
+        <result column="orderNum" property="ordernum"/>
+        <result column="created" property="created"/>
+        <result column="updated" property="updated"/>
+        <result column="statu" property="statu"/>
+    </resultMap>
+
+    <resultMap id="menus" type="com.ljz.huotai.pojo.Menu" extends="BaseResultMap">
+        <collection property="children" ofType="com.ljz.huotai.pojo.Menu">
+            <id property="id" column="id2"/>
+            <result property="parentId" column="pid2"/>
+            <result property="name" column="name2"/>
+            <result property="path" column="path2"/>
+            <result property="perms" column="perms2"/>
+            <result property="component" column="component2"/>
+            <result property="type" column="type2"/>
+            <result property="icon" column="icon2"/>
+            <result property="ordernum" column="orderNum2"/>
+            <result property="created" column="created2"/>
+            <result property="updated" column="updated2"/>
+            <result property="statu" column="statu2"/>
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, parent_id, name, path, perms, component, type, icon, orderNum, created, updated, statu
+    </sql>
+    <!-- 根据登录id查询改用户具有的菜单 -->
+    <select id="getMenuByUserId" resultMap="menus">
+        SELECT DISTINCT m1.*,
+                        m2.id        AS id2,
+                        m2.parent_id as pid2,
+                        m2.`name`    AS name2,
+                        m2.path      AS path2,
+                        m2.perms     AS perms2,
+                        m2.component AS component2,
+                        m2.type      AS type2,
+                        m2.icon      AS icon,
+                        m2.orderNum  AS orderNum2,
+                        m2.created   AS created2,
+                        m2.updated   AS updated2,
+                        m2.statu     AS statu2
+        FROM sys_menu m1,
+             sys_menu m2,
+             sys_role_menu rm,
+             sys_user_role ur
+        WHERE m1.id = m2.parent_id
+          AND m2.id = rm.menu_id
+          AND rm.role_id = ur.role_id
+          AND ur.user_id = #{id}
+        ORDER BY m1.id, m2.id
+    </select>
+
+</mapper>
